@@ -53,8 +53,14 @@ allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-pictur
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight,0.1,100000);
-camera.position.z = 8;
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth/window.innerHeight,
+  0.01,
+  5000
+);
+
+camera.position.set(0,0,10);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -62,13 +68,10 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.05;
 controls.enableZoom = true;
-controls.minDistance = 0.1;
-controls.maxDistance = 100000;
 controls.enablePan = false;
-controls.rotateSpeed = 0.8;
-controls.zoomSpeed = 1.2;
+controls.minDistance = 0.01;
+controls.maxDistance = 3000;
 
 // PLANETA
 const geometry = new THREE.SphereGeometry(2,64,64);
@@ -87,25 +90,25 @@ const ringMaterial = new THREE.MeshBasicMaterial({
   transparent:true,
   opacity:0.6
 });
-const ring = new THREE.Mesh(ringGeometry,ringMaterial);
-ring.rotation.x = Math.PI / 2.3;
+const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+ring.rotation.x = Math.PI / 2;
 scene.add(ring);
 
 const light = new THREE.PointLight(0xffffff,1.5);
 light.position.set(5,5,5);
 scene.add(light);
 
-// ESTRELLAS INFINITAS
+// ESTRELLAS
 const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 10000;
+const starsCount = 6000;
 const posArray = new Float32Array(starsCount * 3);
 
 for(let i=0;i<starsCount*3;i++){
-  posArray[i]=(Math.random()-0.5)*20000;
+  posArray[i]=(Math.random()-0.5)*1000;
 }
 
 starsGeometry.setAttribute('position',new THREE.BufferAttribute(posArray,3));
-const starsMaterial = new THREE.PointsMaterial({size:1});
+const starsMaterial = new THREE.PointsMaterial({size:0.5});
 const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
 scene.add(starsMesh);
 
@@ -123,53 +126,41 @@ const frases = [
 const grupoTextos = new THREE.Group();
 scene.add(grupoTextos);
 
-let ultimaFrase = "";
-
 function crearTexto(texto){
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
-  canvas.width = 512;
-  canvas.height = 128;
+  canvas.width = 1024;
+  canvas.height = 256;
 
-  context.font="bold 48px Arial";
+  context.font="80px Arial";
   context.fillStyle="white";
-  context.shadowColor="violet";
-  context.shadowBlur=15;
-  context.fillText(texto,20,80);
+  context.textAlign="center";
+  context.fillText(texto,512,140);
 
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({map:texture});
   const sprite = new THREE.Sprite(material);
 
   sprite.position.set(
-    (Math.random()-0.5)*500,
-    (Math.random()-0.5)*500,
-    (Math.random()-0.5)*500
+    (Math.random()-0.5)*300,
+    (Math.random()-0.5)*300,
+    (Math.random()-0.5)*300
   );
 
-  sprite.scale.set(8,2,2);
+  sprite.scale.set(30,10,10);
   grupoTextos.add(sprite);
 }
 
-for(let i=0;i<1200;i++){
-  let fraseAleatoria;
-  do{
-    fraseAleatoria = frases[Math.floor(Math.random()*frases.length)];
-  }while(fraseAleatoria === ultimaFrase);
-  
-  ultimaFrase = fraseAleatoria;
+for(let i=0;i<2000;i++){
+  const fraseAleatoria = frases[Math.floor(Math.random()*frases.length)];
   crearTexto(fraseAleatoria);
 }
 
 function animate(){
   requestAnimationFrame(animate);
-
-  controls.update();
-
   planet.rotation.y += 0.003;
   ring.rotation.z += 0.002;
-  grupoTextos.rotation.y += 0.0008;
-
+  controls.update();
   renderer.render(scene,camera);
 }
 animate();
