@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Galaxia 💖</title>
+<title>Mi Galaxia 💙</title>
 <style>
 body{
 margin:0;
@@ -12,33 +12,38 @@ background:black;
 touch-action:none;
 font-family:Arial;
 }
-canvas{
+
+#ui{
 position:fixed;
-top:0;
-left:0;
-}
-#planeta{
-position:absolute;
-width:200px;
-height:200px;
-border-radius:50%;
-background:radial-gradient(circle at 30% 30%, #ff6ec7, #6a00f4);
-box-shadow:0 0 80px #ff6ec7;
-top:50%;
+bottom:20px;
 left:50%;
-transform:translate(-50%,-50%);
-animation:flotar 5s ease-in-out infinite;
+transform:translateX(-50%);
+z-index:10;
 }
-@keyframes flotar{
-0%,100%{transform:translate(-50%,-50%) translateY(0);}
-50%{transform:translate(-50%,-50%) translateY(-15px);}
+
+button{
+padding:12px 25px;
+border:none;
+border-radius:30px;
+background:#2196f3;
+color:white;
+font-size:16px;
+}
+
+canvas{
+display:block;
 }
 </style>
 </head>
 <body>
 
+<div id="ui">
+<input type="file" id="musicInput" accept="audio/*" hidden>
+<button onclick="document.getElementById('musicInput').click()">Elegir Música 🎵</button>
+<audio id="audio" controls style="display:none"></audio>
+</div>
+
 <canvas id="space"></canvas>
-<div id="planeta"></div>
 
 <script>
 const canvas = document.getElementById("space");
@@ -50,16 +55,10 @@ canvas.height = window.innerHeight;
 let scale = 1;
 let offsetX = 0;
 let offsetY = 0;
+
 let isDragging = false;
 let lastX = 0;
 let lastY = 0;
-
-/* ZOOM RUEDA */
-canvas.addEventListener("wheel", e=>{
-e.preventDefault();
-scale += e.deltaY * -0.001;
-scale = Math.min(Math.max(.5, scale), 5);
-});
 
 /* DRAG */
 canvas.addEventListener("mousedown", e=>{
@@ -77,7 +76,7 @@ lastY=e.clientY;
 }
 });
 
-/* TOUCH MOVE */
+/* TOUCH */
 canvas.addEventListener("touchstart", e=>{
 if(e.touches.length===1){
 lastX=e.touches[0].clientX;
@@ -105,31 +104,61 @@ window.lastDistance=distance;
 
 /* ESTRELLAS */
 const stars=[];
-for(let i=0;i<2000;i++){
+for(let i=0;i<2500;i++){
 stars.push({
-x:Math.random()*3000-1500,
-y:Math.random()*3000-1500,
-size:Math.random()*2
+x:Math.random()*4000-2000,
+y:Math.random()*4000-2000,
+size:Math.random()*1.5
 });
 }
 
 /* PALABRAS */
 const palabras=[
-"Mi amor ❤️","Mi reina 👑","Mi perla 🤍","Mi bb 🧸","Mi negra hermosa 💋",
-"Mi goldix 🥺","Mi princesa 👑","Mi luna 🌙","Mi sol ☀️",
-"Mi estrella ✨","Mi galaxia favorita 🌌","Mi todo 💖",
-"Mi vida 💕","Mi universo 🌠","Perdóname mi amor 🥺",
-"Eres tú, eres lo mejor 💘","No quiero perderte 😔",
-"Mereces el universo entero 🌟"
+"Mi amor ❤️","Mi reina 👑","Mi perla 🤍","Mi bb 🧸",
+"Mi negra hermosa 💋","Mi goldix 🥺",
+"Mi princesa 👑","Mi luna 🌙","Mi sol ☀️",
+"Mi estrella ✨","Mi galaxia favorita 🌌",
+"Mi todo 💖","Mi vida 💕","Mi universo 🌠",
+"Perdóname mi amor 🥺","Eres tú, eres lo mejor 💘",
+"No quiero perderte 😔","Mereces el universo entero 🌟"
 ];
 
 const textos=[];
-for(let i=0;i<1000;i++){
+for(let i=0;i<1500;i++){
 textos.push({
-x:Math.random()*3000-1500,
-y:Math.random()*3000-1500,
+x:Math.random()*4000-2000,
+y:Math.random()*4000-2000,
 texto:palabras[Math.floor(Math.random()*palabras.length)]
 });
+}
+
+/* PLANETA */
+const planeta = {
+x:0,
+y:0,
+radio:120
+};
+
+function drawPlaneta(){
+/* planeta azul oscuro */
+let grad = ctx.createRadialGradient(
+planeta.x-40,planeta.y-40,20,
+planeta.x,planeta.y,planeta.radio
+);
+grad.addColorStop(0,"#1e3c72");
+grad.addColorStop(1,"#0f2027");
+
+ctx.fillStyle=grad;
+ctx.beginPath();
+ctx.arc(planeta.x,planeta.y,planeta.radio,0,Math.PI*2);
+ctx.fill();
+
+/* anillo */
+ctx.strokeStyle="rgba(255,255,255,0.6)";
+ctx.lineWidth=15;
+ctx.beginPath();
+ctx.ellipse(planeta.x,planeta.y,170,60,0,0,Math.PI*2);
+ctx.stroke();
 }
 
 function draw(){
@@ -138,25 +167,38 @@ ctx.save();
 ctx.translate(canvas.width/2+offsetX,canvas.height/2+offsetY);
 ctx.scale(scale,scale);
 
-/* Dibujar estrellas */
+/* estrellas */
 ctx.fillStyle="white";
 stars.forEach(s=>{
 ctx.fillRect(s.x,s.y,s.size,s.size);
 });
 
-/* Dibujar palabras */
+/* palabras */
 ctx.fillStyle="white";
 ctx.font="14px Arial";
 textos.forEach(t=>{
 ctx.fillText(t.texto,t.x,t.y);
 });
 
+/* planeta */
+drawPlaneta();
+
 ctx.restore();
 requestAnimationFrame(draw);
 }
 
 draw();
+
+/* MUSICA */
+document.getElementById("musicInput").addEventListener("change",function(){
+const file=this.files[0];
+if(file){
+const audio=document.getElementById("audio");
+audio.src=URL.createObjectURL(file);
+audio.play();
+}
+});
 </script>
 
 </body>
-  </html>
+</html>
