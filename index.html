@@ -9,7 +9,6 @@ body{
 margin:0;
 overflow:hidden;
 background:black;
-touch-action:none;
 font-family:Arial;
 }
 #ui{
@@ -38,31 +37,34 @@ canvas{display:block;}
 <audio id="audio" controls style="display:none"></audio>
 </div>
 
-<canvas id="space"></canvas>
+<canvas id="c"></canvas>
 
 <script>
-const canvas = document.getElementById("space");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let scale = 1;
+let zoom = 1;
 let offsetX = 0;
 let offsetY = 0;
-let isDragging = false;
-let lastX = 0;
-let lastY = 0;
 
-/* DRAG */
-canvas.addEventListener("mousedown", e=>{
-isDragging=true;
+document.addEventListener("wheel", e=>{
+zoom += e.deltaY * -0.0005;
+zoom = Math.min(Math.max(.2, zoom), 8);
+});
+
+let dragging=false;
+let lastX,lastY;
+
+canvas.addEventListener("mousedown",e=>{
+dragging=true;
 lastX=e.clientX;
 lastY=e.clientY;
 });
-canvas.addEventListener("mouseup", ()=>isDragging=false);
-canvas.addEventListener("mousemove", e=>{
-if(isDragging){
+canvas.addEventListener("mouseup",()=>dragging=false);
+canvas.addEventListener("mousemove",e=>{
+if(dragging){
 offsetX += e.clientX-lastX;
 offsetY += e.clientY-lastY;
 lastX=e.clientX;
@@ -70,106 +72,87 @@ lastY=e.clientY;
 }
 });
 
-/* TOUCH */
-canvas.addEventListener("touchstart", e=>{
-if(e.touches.length===1){
-lastX=e.touches[0].clientX;
-lastY=e.touches[0].clientY;
-}
-});
+/* PROFUNDIDAD REAL */
+function randomRange(n){return Math.random()*n-n/2;}
 
-canvas.addEventListener("touchmove", e=>{
-if(e.touches.length===1){
-offsetX += e.touches[0].clientX-lastX;
-offsetY += e.touches[0].clientY-lastY;
-lastX=e.touches[0].clientX;
-lastY=e.touches[0].clientY;
-}
-if(e.touches.length===2){
-let dx=e.touches[0].clientX-e.touches[1].clientX;
-let dy=e.touches[0].clientY-e.touches[1].clientY;
-let distance=Math.sqrt(dx*dx+dy*dy);
-if(!window.lastDistance) window.lastDistance=distance;
-scale += (distance-window.lastDistance)*0.002;
-scale=Math.min(Math.max(.3,scale),6);
-window.lastDistance=distance;
-}
-});
-
-/* ESTRELLAS */
 const stars=[];
-for(let i=0;i<3000;i++){
+for(let i=0;i<2000;i++){
 stars.push({
-x:Math.random()*8000-4000,
-y:Math.random()*8000-4000,
-size:Math.random()*1
+x:randomRange(8000),
+y:randomRange(8000),
+z:Math.random()*5+1
 });
 }
 
-/* PALABRAS */
-const palabras=[
+const frases=[
 "Mi amor ❤️","Mi reina 👑","Mi perla 🤍","Mi bb 🧸",
 "Mi negra hermosa 💋","Mi goldix 🥺",
 "Perdóname mi amor 🥺",
 "Eres tú, eres lo mejor 💘",
 "No quiero perderte 😔",
-"Mereces el universo entero 🌟"
+"Mereces el universo entero ✨"
 ];
 
 const textos=[];
-for(let i=0;i<2500;i++){
+for(let i=0;i<3000;i++){
 textos.push({
-x:Math.random()*8000-4000,
-y:Math.random()*8000-4000,
-texto:palabras[Math.floor(Math.random()*palabras.length)]
+x:randomRange(8000),
+y:randomRange(8000),
+z:Math.random()*5+1,
+t:frases[Math.floor(Math.random()*frases.length)]
 });
 }
 
-/* PLANETA LEJOS DEL CENTRO */
+/* PLANETA EN PROFUNDIDAD */
 const planeta={
-x:1500,
-y:-800,
-radio:140
+x:1200,
+y:-600,
+z:2,
+radio:200
 };
-
-function drawPlaneta(){
-let grad = ctx.createRadialGradient(
-planeta.x-40,planeta.y-40,20,
-planeta.x,planeta.y,planeta.radio
-);
-grad.addColorStop(0,"#1a237e");
-grad.addColorStop(1,"#0d47a1");
-
-ctx.fillStyle=grad;
-ctx.beginPath();
-ctx.arc(planeta.x,planeta.y,planeta.radio,0,Math.PI*2);
-ctx.fill();
-
-ctx.strokeStyle="rgba(255,255,255,0.6)";
-ctx.lineWidth=18;
-ctx.beginPath();
-ctx.ellipse(planeta.x,planeta.y,200,70,0,0,Math.PI*2);
-ctx.stroke();
-}
 
 function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
 ctx.save();
 ctx.translate(canvas.width/2+offsetX,canvas.height/2+offsetY);
-ctx.scale(scale,scale);
+ctx.scale(zoom,zoom);
 
-ctx.fillStyle="white";
+/* estrellas con profundidad */
 stars.forEach(s=>{
-ctx.fillRect(s.x,s.y,s.size,s.size);
+let scaleDepth=1/s.z;
+ctx.fillStyle="white";
+ctx.fillRect(s.x*scaleDepth,s.y*scaleDepth,1*scaleDepth,1*scaleDepth);
 });
 
+/* textos */
 ctx.fillStyle="white";
 ctx.font="14px Arial";
 textos.forEach(t=>{
-ctx.fillText(t.texto,t.x,t.y);
+let scaleDepth=1/t.z;
+ctx.fillText(t.t,t.x*scaleDepth,t.y*scaleDepth);
 });
 
-drawPlaneta();
+/* planeta */
+let scaleDepth=1/planeta.z;
+let px=planeta.x*scaleDepth;
+let py=planeta.y*scaleDepth;
+let r=planeta.radio*scaleDepth;
+
+let grad=ctx.createRadialGradient(px-r*.3,py-r*.3,r*.2,px,py,r);
+grad.addColorStop(0,"#1a237e");
+grad.addColorStop(1,"#0d47a1");
+
+ctx.fillStyle=grad;
+ctx.beginPath();
+ctx.arc(px,py,r,0,Math.PI*2);
+ctx.fill();
+
+/* anillo 3D */
+ctx.strokeStyle="rgba(255,255,255,0.6)";
+ctx.lineWidth=15*scaleDepth;
+ctx.beginPath();
+ctx.ellipse(px,py,r*1.6,r*.5,0.5,0,Math.PI*2);
+ctx.stroke();
 
 ctx.restore();
 requestAnimationFrame(draw);
@@ -177,7 +160,7 @@ requestAnimationFrame(draw);
 
 draw();
 
-/* MUSICA */
+/* música */
 document.getElementById("musicInput").addEventListener("change",function(){
 const file=this.files[0];
 if(file){
