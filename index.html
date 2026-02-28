@@ -41,10 +41,10 @@ const camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
-10000   // 👈 zoom infinito real
+10000
 );
 
-camera.position.set(0,0,8);
+camera.position.set(0,0,10);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -52,12 +52,8 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.enablePan = false;
 controls.minDistance = 1;
-controls.maxDistance = 5000; // 👈 infinito práctico
-controls.enableRotate = true;
-controls.enableZoom = true;
-controls.zoomSpeed = 1.5;
+controls.maxDistance = 5000;
 
 // 🌍 PLANETA
 const geometry = new THREE.SphereGeometry(2,64,64);
@@ -86,19 +82,19 @@ scene.add(light);
 
 // ⭐ ESTRELLAS
 const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 8000;
+const starsCount = 6000;
 const posArray = new Float32Array(starsCount * 3);
 
 for(let i=0;i<starsCount*3;i++){
-  posArray[i]=(Math.random()-0.5)*2000;
+  posArray[i]=(Math.random()-0.5)*1000;
 }
 
 starsGeometry.setAttribute('position',new THREE.BufferAttribute(posArray,3));
-const starsMaterial = new THREE.PointsMaterial({size:0.2});
+const starsMaterial = new THREE.PointsMaterial({size:0.15});
 const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
 scene.add(starsMesh);
 
-// 💜 FRASES
+// 💜 FRASES MÁS CERCA
 const frases = [
 "Mi amor 💕","Mi reina 👑","Mi perla 🤍","Mi bb 🥺",
 "Mi negra hermosa 😘","Mi goldix 💜","Mi sol ☀",
@@ -123,21 +119,22 @@ function crearTexto(texto){
   const material = new THREE.SpriteMaterial({map:texture});
   const sprite = new THREE.Sprite(material);
 
+  // 👇 AHORA MÁS CERCA
   sprite.position.set(
-    (Math.random()-0.5)*1500,
-    (Math.random()-0.5)*1500,
-    (Math.random()-0.5)*1500
+    (Math.random()-0.5)*300,
+    (Math.random()-0.5)*300,
+    (Math.random()-0.5)*300
   );
 
-  sprite.scale.set(10,3,3);
+  sprite.scale.set(8,2.5,2.5);
   grupoTextos.add(sprite);
 }
 
-for(let i=0;i<2000;i++){
+for(let i=0;i<1500;i++){
   crearTexto(frases[Math.floor(Math.random()*frases.length)]);
 }
 
-// 💖 CORAZONES AL TOCAR
+// 💖 CORAZONES
 window.addEventListener("click", crearCorazon);
 window.addEventListener("touchstart", crearCorazon);
 
@@ -154,8 +151,7 @@ function crearCorazon(event){
   vector.unproject(camera);
 
   const dir = vector.sub(camera.position).normalize();
-  const distance = 15;
-  const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+  const pos = camera.position.clone().add(dir.multiplyScalar(15));
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -166,21 +162,18 @@ function crearCorazon(event){
   ctx.fillText("💖", 50, 170);
 
   const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.SpriteMaterial({
-    map:texture,
-    transparent:true
-  });
-
+  const material = new THREE.SpriteMaterial({map:texture,transparent:true});
   const sprite = new THREE.Sprite(material);
+
   sprite.position.copy(pos);
-  sprite.scale.set(5,5,5);
+  sprite.scale.set(4,4,4);
   scene.add(sprite);
 
-  let escala = 5;
+  let scale = 4;
 
   function animar(){
-    escala += 0.3;
-    sprite.scale.set(escala,escala,escala);
+    scale += 0.3;
+    sprite.scale.set(scale,scale,scale);
     sprite.material.opacity -= 0.02;
 
     if(sprite.material.opacity <= 0){
