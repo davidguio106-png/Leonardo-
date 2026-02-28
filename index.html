@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Goldix 💜</title>
+<title>Océano Goldix 💙</title>
 <style>
 body{
   margin:0;
   overflow:hidden;
-  background:black;
+  background:linear-gradient(#001a33,#000814);
   font-family:Arial;
 }
 #mensaje{
@@ -18,14 +18,7 @@ body{
   color:white;
   font-size:22px;
   font-weight:bold;
-  text-shadow:0 0 20px violet;
-  z-index:2;
-}
-.spotify{
-  position:absolute;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
+  text-shadow:0 0 20px cyan;
   z-index:2;
 }
 </style>
@@ -33,17 +26,7 @@ body{
 <body>
 
 <div id="mensaje">
-Te amo mi Goldix hermosa 🥺💜
-</div>
-
-<div class="spotify">
-<iframe style="border-radius:12px"
-src="https://open.spotify.com/embed/track/46U8ErW47SBTzO6jzxfZlx"
-width="300"
-height="80"
-frameborder="0"
-allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-</iframe>
+Mi sirenita hermosa 🥺💙 mi reina del océano
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -52,13 +35,12 @@ allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-pictur
 <script>
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
 
 const camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
-100000
+10000
 );
 
 camera.position.z = 8;
@@ -67,111 +49,97 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// 🔥 CONTROLES COMPATIBLES CON IPHONE
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
 controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-
-controls.enableZoom = true;
-controls.enableRotate = true;
-controls.enablePan = true;
-
-controls.minDistance = 0.5;
-controls.maxDistance = 100000;
-
-controls.screenSpacePanning = true;
-
-controls.touches = {
-  ONE: THREE.TOUCH.ROTATE,
-  TWO: THREE.TOUCH.DOLLY_PAN
-};
-
+controls.minDistance = 1;
+controls.maxDistance = 5000;
 renderer.domElement.style.touchAction = "none";
-renderer.domElement.style.webkitUserSelect = "none";
-renderer.domElement.style.userSelect = "none";
 
-// PLANETA
-const geometry = new THREE.SphereGeometry(2,64,64);
+// 🌊 ESFERA TIPO PLANETA DE AGUA
+const geometry = new THREE.SphereGeometry(2,128,128);
 const material = new THREE.MeshStandardMaterial({
-color:0x8a2be2,
-emissive:0x5500aa
+  color:0x0066cc,
+  emissive:0x003366,
+  metalness:0.3,
+  roughness:0.4
 });
-const planet = new THREE.Mesh(geometry,material);
-scene.add(planet);
+const oceanPlanet = new THREE.Mesh(geometry,material);
+scene.add(oceanPlanet);
 
-const light = new THREE.PointLight(0xffffff,1.5);
+const light = new THREE.PointLight(0xffffff,2);
 light.position.set(5,5,5);
 scene.add(light);
 
-// ESTRELLAS
-const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 4000;
-const posArray = new Float32Array(starsCount * 3);
+// ✨ BURBUJAS
+const bubbleGeometry = new THREE.BufferGeometry();
+const bubbleCount = 3000;
+const positions = new Float32Array(bubbleCount * 3);
 
-for(let i=0;i<starsCount*3;i++){
-posArray[i]=(Math.random()-0.5)*200;
+for(let i=0;i<bubbleCount*3;i++){
+  positions[i]=(Math.random()-0.5)*200;
 }
 
-starsGeometry.setAttribute('position',new THREE.BufferAttribute(posArray,3));
-const starsMaterial = new THREE.PointsMaterial({size:0.3});
-const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
-scene.add(starsMesh);
+bubbleGeometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
 
-// FRASES
+const bubbleMaterial = new THREE.PointsMaterial({
+  size:0.15,
+  color:0x66ccff
+});
+
+const bubbles = new THREE.Points(bubbleGeometry,bubbleMaterial);
+scene.add(bubbles);
+
+// 💙 FRASES FLOTANDO
 const frases = [
-"Mi amor 💕","Mi vida 💖","Mi princesa 👑","Mi reina 🌹",
-"Mi luna 🌙","Mi sol ☀","Mi estrella ✨","Mi galaxia 💫",
-"Mi perla 🤍","Mi tesoro 💎","Mi bb 🥺","Mi goldita 💜",
-"Mi negrita 😘","Mi todo 💞","Mi cielo 🌌",
-"Te amo 💜","Te amo mi Goldix hermosa 🥺",
-"Mi mundo 🌍","Mi universo 🌠","Mi bombón 🍬",
-"Mi corazón ❤️","Mi niña hermosa 💕"
+"Mi sirenita 💙","Mi reina 👑","Mi océano 🌊",
+"Mi perla 🤍","Mi tesoro 💎","Mi amor 💕",
+"Eres lo mejor 🥺","No quiero perderte 💙"
 ];
 
 const grupoTextos = new THREE.Group();
 scene.add(grupoTextos);
 
 function crearTexto(texto){
-const canvas = document.createElement("canvas");
-const context = canvas.getContext("2d");
-canvas.width = 512;
-canvas.height = 128;
-context.font="40px Arial";
-context.fillStyle="white";
-context.fillText(texto,20,70);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  canvas.width = 512;
+  canvas.height = 128;
 
-const texture = new THREE.CanvasTexture(canvas);
-const material = new THREE.SpriteMaterial({map:texture});
-const sprite = new THREE.Sprite(material);
+  context.font="40px Arial";
+  context.fillStyle="white";
+  context.fillText(texto,20,70);
 
-sprite.position.set(
-(Math.random()-0.5)*80,
-(Math.random()-0.5)*80,
-(Math.random()-0.5)*80
-);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({map:texture});
+  const sprite = new THREE.Sprite(material);
 
-sprite.scale.set(6,1.5,1.5);
-grupoTextos.add(sprite);
+  sprite.position.set(
+    (Math.random()-0.5)*100,
+    (Math.random()-0.5)*100,
+    (Math.random()-0.5)*100
+  );
+
+  sprite.scale.set(6,1.5,1.5);
+  grupoTextos.add(sprite);
 }
 
-for(let i=0;i<1500;i++){
-const fraseAleatoria = frases[Math.floor(Math.random()*frases.length)];
-crearTexto(fraseAleatoria);
+for(let i=0;i<1000;i++){
+  crearTexto(frases[Math.floor(Math.random()*frases.length)]);
 }
 
 function animate(){
-requestAnimationFrame(animate);
-planet.rotation.y += 0.003;
-controls.update();
-renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+  oceanPlanet.rotation.y += 0.002;
+  bubbles.rotation.y += 0.0005;
+  controls.update();
+  renderer.render(scene,camera);
 }
 animate();
 
 window.addEventListener("resize",()=>{
-camera.aspect = window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth,window.innerHeight);
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
 });
 
 </script>
