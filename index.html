@@ -53,29 +53,24 @@ allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-pictur
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth/window.innerHeight,
-  0.1,
-  5000   // profundidad grande
-);
-
-camera.position.set(0,0,8);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight,0.1,100000);
+camera.position.z = 8;
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.enableZoom = true;
-controls.minDistance = 2;
-controls.maxDistance = 4000; // zoom infinito
+controls.minDistance = 0.1;
+controls.maxDistance = 100000;
 controls.enablePan = false;
+controls.rotateSpeed = 0.8;
+controls.zoomSpeed = 1.2;
 
-// ===== PLANETA =====
+// PLANETA
 const geometry = new THREE.SphereGeometry(2,64,64);
 const material = new THREE.MeshStandardMaterial({
   color:0x8a2be2,
@@ -84,49 +79,37 @@ const material = new THREE.MeshStandardMaterial({
 const planet = new THREE.Mesh(geometry,material);
 scene.add(planet);
 
-// ===== ANILLO =====
-const ringGeometry = new THREE.RingGeometry(2.8,3.6,64);
+// ANILLO
+const ringGeometry = new THREE.RingGeometry(3,4,64);
 const ringMaterial = new THREE.MeshBasicMaterial({
   color:0xffffff,
   side:THREE.DoubleSide,
   transparent:true,
-  opacity:0.5
+  opacity:0.6
 });
-const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-ring.rotation.x = Math.PI / 2.5;
-planet.add(ring);
+const ring = new THREE.Mesh(ringGeometry,ringMaterial);
+ring.rotation.x = Math.PI / 2.3;
+scene.add(ring);
 
-// ===== LUZ =====
 const light = new THREE.PointLight(0xffffff,1.5);
 light.position.set(5,5,5);
 scene.add(light);
 
-// ===== ESTRELLAS INFINITAS =====
-function crearEstrellas(rango, cantidad){
-  const starsGeometry = new THREE.BufferGeometry();
-  const posArray = new Float32Array(cantidad * 3);
+// ESTRELLAS INFINITAS
+const starsGeometry = new THREE.BufferGeometry();
+const starsCount = 10000;
+const posArray = new Float32Array(starsCount * 3);
 
-  for(let i=0;i<cantidad*3;i++){
-    posArray[i]=(Math.random()-0.5)*rango;
-  }
-
-  starsGeometry.setAttribute('position',
-    new THREE.BufferAttribute(posArray,3));
-
-  const starsMaterial = new THREE.PointsMaterial({
-    size:0.25
-  });
-
-  const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
-  scene.add(starsMesh);
+for(let i=0;i<starsCount*3;i++){
+  posArray[i]=(Math.random()-0.5)*20000;
 }
 
-// varias capas para que nunca quede vacío
-crearEstrellas(500,8000);
-crearEstrellas(1500,12000);
-crearEstrellas(4000,20000);
+starsGeometry.setAttribute('position',new THREE.BufferAttribute(posArray,3));
+const starsMaterial = new THREE.PointsMaterial({size:1});
+const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
+scene.add(starsMesh);
 
-// ===== TEXTOS =====
+// FRASES
 const frases = [
 "Mi amor 💕","Mi vida 💖","Mi princesa 👑","Mi reina 🌹",
 "Mi luna 🌙","Mi sol ☀","Mi estrella ✨","Mi galaxia 💫",
@@ -140,44 +123,53 @@ const frases = [
 const grupoTextos = new THREE.Group();
 scene.add(grupoTextos);
 
+let ultimaFrase = "";
+
 function crearTexto(texto){
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   canvas.width = 512;
   canvas.height = 128;
 
-  context.font="40px Arial";
+  context.font="bold 48px Arial";
   context.fillStyle="white";
-  context.fillText(texto,20,70);
+  context.shadowColor="violet";
+  context.shadowBlur=15;
+  context.fillText(texto,20,80);
 
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({map:texture});
   const sprite = new THREE.Sprite(material);
 
   sprite.position.set(
-    (Math.random()-0.5)*800,
-    (Math.random()-0.5)*800,
-    (Math.random()-0.5)*800
+    (Math.random()-0.5)*500,
+    (Math.random()-0.5)*500,
+    (Math.random()-0.5)*500
   );
 
-  sprite.scale.set(6,1.5,1.5);
+  sprite.scale.set(8,2,2);
   grupoTextos.add(sprite);
 }
 
-for(let i=0;i<2000;i++){
-  const fraseAleatoria =
-    frases[Math.floor(Math.random()*frases.length)];
+for(let i=0;i<1200;i++){
+  let fraseAleatoria;
+  do{
+    fraseAleatoria = frases[Math.floor(Math.random()*frases.length)];
+  }while(fraseAleatoria === ultimaFrase);
+  
+  ultimaFrase = fraseAleatoria;
   crearTexto(fraseAleatoria);
 }
 
-// ===== ANIMACIÓN =====
 function animate(){
   requestAnimationFrame(animate);
 
-  planet.rotation.y += 0.003;
-  grupoTextos.rotation.y += 0.0004;
-
   controls.update();
+
+  planet.rotation.y += 0.003;
+  ring.rotation.z += 0.002;
+  grupoTextos.rotation.y += 0.0008;
+
   renderer.render(scene,camera);
 }
 animate();
