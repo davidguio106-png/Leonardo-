@@ -21,46 +21,30 @@ body{
   text-shadow:0 0 20px violet;
   z-index:2;
 }
-.spotify{
-  position:absolute;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:2;
-}
 </style>
 </head>
 <body>
 
 <div id="mensaje">
-Te amo mi Goldix hermosa 🥺💜
-</div>
-
-<div class="spotify">
-<iframe style="border-radius:12px"
-src="https://open.spotify.com/embed/track/46U8ErW47SBTzO6jzxfZlx"
-width="300"
-height="80"
-frameborder="0"
-allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-</iframe>
+Te amo mi Goldix hermosa 🥺💜 mi princesa mi reina mi luna mi perla mi sol mi estrella mi galaxia favorita 💫
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
 const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth/window.innerHeight,
-  0.01,
-  5000
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+10000   // 👈 zoom infinito real
 );
 
-camera.position.set(0,0,10);
+camera.position.set(0,0,8);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -68,59 +52,58 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.enableZoom = true;
 controls.enablePan = false;
-controls.minDistance = 0.01;
-controls.maxDistance = 3000;
+controls.minDistance = 1;
+controls.maxDistance = 5000; // 👈 infinito práctico
+controls.enableRotate = true;
+controls.enableZoom = true;
+controls.zoomSpeed = 1.5;
 
-// PLANETA
+// 🌍 PLANETA
 const geometry = new THREE.SphereGeometry(2,64,64);
 const material = new THREE.MeshStandardMaterial({
-  color:0x8a2be2,
+  color:0x9b00ff,
   emissive:0x5500aa
 });
 const planet = new THREE.Mesh(geometry,material);
 scene.add(planet);
 
-// ANILLO
-const ringGeometry = new THREE.RingGeometry(3,4,64);
-const ringMaterial = new THREE.MeshBasicMaterial({
+// 💍 ANILLO
+const ringGeo = new THREE.RingGeometry(3,4,64);
+const ringMat = new THREE.MeshBasicMaterial({
   color:0xffffff,
   side:THREE.DoubleSide,
   transparent:true,
   opacity:0.6
 });
-const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-ring.rotation.x = Math.PI / 2;
-scene.add(ring);
+const ring = new THREE.Mesh(ringGeo,ringMat);
+ring.rotation.x = Math.PI/2.2;
+planet.add(ring);
 
 const light = new THREE.PointLight(0xffffff,1.5);
 light.position.set(5,5,5);
 scene.add(light);
 
-// ESTRELLAS
+// ⭐ ESTRELLAS
 const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 6000;
+const starsCount = 8000;
 const posArray = new Float32Array(starsCount * 3);
 
 for(let i=0;i<starsCount*3;i++){
-  posArray[i]=(Math.random()-0.5)*1000;
+  posArray[i]=(Math.random()-0.5)*2000;
 }
 
 starsGeometry.setAttribute('position',new THREE.BufferAttribute(posArray,3));
-const starsMaterial = new THREE.PointsMaterial({size:0.5});
+const starsMaterial = new THREE.PointsMaterial({size:0.2});
 const starsMesh = new THREE.Points(starsGeometry,starsMaterial);
 scene.add(starsMesh);
 
-// FRASES
+// 💜 FRASES
 const frases = [
-"Mi amor 💕","Mi vida 💖","Mi princesa 👑","Mi reina 🌹",
-"Mi luna 🌙","Mi sol ☀","Mi estrella ✨","Mi galaxia 💫",
-"Mi perla 🤍","Mi tesoro 💎","Mi bb 🥺","Mi goldita 💜",
-"Mi negrita 😘","Mi todo 💞","Mi cielo 🌌",
-"Te amo 💜","Te amo mi Goldix hermosa 🥺",
-"Mi mundo 🌍","Mi universo 🌠","Mi bombón 🍬",
-"Mi corazón ❤️","Mi niña hermosa 💕"
+"Mi amor 💕","Mi reina 👑","Mi perla 🤍","Mi bb 🥺",
+"Mi negra hermosa 😘","Mi goldix 💜","Mi sol ☀",
+"Mi estrella ✨","Mi universo 🌌","Mi vida 💖",
+"Eres lo mejor 💞","No quiero perderte 🥺"
 ];
 
 const grupoTextos = new THREE.Group();
@@ -129,37 +112,90 @@ scene.add(grupoTextos);
 function crearTexto(texto){
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
-  canvas.width = 1024;
-  canvas.height = 256;
+  canvas.width = 512;
+  canvas.height = 128;
 
-  context.font="80px Arial";
+  context.font="40px Arial";
   context.fillStyle="white";
-  context.textAlign="center";
-  context.fillText(texto,512,140);
+  context.fillText(texto,20,70);
 
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({map:texture});
   const sprite = new THREE.Sprite(material);
 
   sprite.position.set(
-    (Math.random()-0.5)*300,
-    (Math.random()-0.5)*300,
-    (Math.random()-0.5)*300
+    (Math.random()-0.5)*1500,
+    (Math.random()-0.5)*1500,
+    (Math.random()-0.5)*1500
   );
 
-  sprite.scale.set(30,10,10);
+  sprite.scale.set(10,3,3);
   grupoTextos.add(sprite);
 }
 
 for(let i=0;i<2000;i++){
-  const fraseAleatoria = frases[Math.floor(Math.random()*frases.length)];
-  crearTexto(fraseAleatoria);
+  crearTexto(frases[Math.floor(Math.random()*frases.length)]);
+}
+
+// 💖 CORAZONES AL TOCAR
+window.addEventListener("click", crearCorazon);
+window.addEventListener("touchstart", crearCorazon);
+
+function crearCorazon(event){
+
+  const x = (event.clientX || event.touches[0].clientX);
+  const y = (event.clientY || event.touches[0].clientY);
+
+  const mouse = new THREE.Vector2();
+  mouse.x = (x / window.innerWidth) * 2 - 1;
+  mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+  const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+  vector.unproject(camera);
+
+  const dir = vector.sub(camera.position).normalize();
+  const distance = 15;
+  const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 256;
+  canvas.height = 256;
+
+  ctx.font = "120px Arial";
+  ctx.fillText("💖", 50, 170);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({
+    map:texture,
+    transparent:true
+  });
+
+  const sprite = new THREE.Sprite(material);
+  sprite.position.copy(pos);
+  sprite.scale.set(5,5,5);
+  scene.add(sprite);
+
+  let escala = 5;
+
+  function animar(){
+    escala += 0.3;
+    sprite.scale.set(escala,escala,escala);
+    sprite.material.opacity -= 0.02;
+
+    if(sprite.material.opacity <= 0){
+      scene.remove(sprite);
+      return;
+    }
+    requestAnimationFrame(animar);
+  }
+
+  animar();
 }
 
 function animate(){
   requestAnimationFrame(animate);
   planet.rotation.y += 0.003;
-  ring.rotation.z += 0.002;
   controls.update();
   renderer.render(scene,camera);
 }
@@ -170,7 +206,7 @@ window.addEventListener("resize",()=>{
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
 });
-</script>
 
+</script>
 </body>
 </html>
